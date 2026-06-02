@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Transaction;
 use App\Enums\AccStatus;
 use App\Enums\AccType;
 use App\Enums\Currency;
@@ -37,7 +38,6 @@ class Account extends Model
         ];
     }
 
-    // ─── Veze ────────────────────────────────────────────────────────────────
 
     public function user(): BelongsTo
     {
@@ -52,15 +52,15 @@ class Account extends Model
 
     public function sentTransactions(): HasMany
     {
-        return $this->hasMany(Transaction::class, 'from_account_id');
+        return $this->hasMany(Transaction::class, 'sender_account_id');
     }
 
     public function receivedTransactions(): HasMany
     {
-        return $this->hasMany(Transaction::class, 'to_account_id');
+        return $this->hasMany(Transaction::class, 'receiver_account_id');
     }
 
-    // ─── Pomocne metode ───────────────────────────────────────────────────────
+
 
     public function isActive(): bool
     {

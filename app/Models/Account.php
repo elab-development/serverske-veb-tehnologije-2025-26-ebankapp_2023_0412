@@ -37,7 +37,6 @@ class Account extends Model
         ];
     }
 
-    // ─── Veze ────────────────────────────────────────────────────────────────
 
     public function user(): BelongsTo
     {
@@ -60,7 +59,7 @@ class Account extends Model
         return $this->hasMany(Transaction::class, 'to_account_id');
     }
 
-    // ─── Pomocne metode ───────────────────────────────────────────────────────
+
 
     public function isActive(): bool
     {

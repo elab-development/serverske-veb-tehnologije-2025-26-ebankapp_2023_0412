@@ -25,10 +25,10 @@ enum Role: string
                 'accounts.view', 'accounts.create', 'accounts.freeze',
                 'transactions.view', 'transactions.reverse',
             ],
-            Role::Manager => [
-                'users.view',
-                'accounts.view', 'accounts.create', 'accounts.freeze',
-                'transactions.view',
+            Role::Manager => [ //treba controller za permission
+                'users.view.own',
+                'users.create.account',
+                'accounts.view.own',
             ],
             Role::Client => [
                 'accounts.view',
@@ -39,6 +39,6 @@ enum Role: string
 
     public function can(string $permission): bool
     {
-        return in_array($permission, $this->permissions());
+        return $this === self::Admin || in_array($permission, $this->permissions());
     }
 }

@@ -13,12 +13,12 @@ return new class extends Migration
 
             $table->foreignId('sender_account_id')
             ->constrained('accounts')
-            ->onDelte('cascade');
+            ->onDelete('cascade');
 
             $table->foreignId('reciever_account_id')
             ->nullable()
             ->constrained('accounts')
-            ->onDelte('set null');
+            ->onDelete('set null');
 
             $table->string('external_account_id')
             ->nullable();

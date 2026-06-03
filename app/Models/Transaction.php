@@ -28,7 +28,7 @@ public function senderAccount(){
 }
 
 //Primalac 
-public function reciverAccount(){
+public function receiverAccount(){
     return $this->belongsTo(Account::class, 'receiver_account_id');
 }
 

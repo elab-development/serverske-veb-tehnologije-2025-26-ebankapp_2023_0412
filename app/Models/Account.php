@@ -24,7 +24,6 @@ class Account extends Model
         'currency',
         'balance',
         'status',
-        'is_shared',
     ];
 
     protected function casts(): array
@@ -34,7 +33,6 @@ class Account extends Model
             'currency'  => Currency::class,
             'status'    => AccStatus::class,
             'balance'   => 'decimal:2',
-            'is_shared' => 'boolean',
         ];
     }
 

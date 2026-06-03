@@ -20,6 +20,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('transactions/search', [TransactionController::class, 'search']);
     Route::get('accounts/{id}/transactions', [TransactionController::class, 'byAccount']);
     Route::get('accounts/{id}/balance',      [AccountController::class, 'getBalance']);
+    Route::patch('users/{id}/role', [UserController::class, 'changeRole']);
+    Route::patch('/users/{id}/block', [UserController::class, 'block']);
 
 
 

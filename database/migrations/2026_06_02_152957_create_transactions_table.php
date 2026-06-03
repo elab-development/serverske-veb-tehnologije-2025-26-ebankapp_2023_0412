@@ -15,7 +15,7 @@ return new class extends Migration
             ->constrained('accounts')
             ->onDelete('cascade');
 
-            $table->foreignId('reciever_account_id')
+            $table->foreignId('receiver_account_id')
             ->nullable()
             ->constrained('accounts')
             ->onDelete('set null');

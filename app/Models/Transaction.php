@@ -12,22 +12,20 @@ class Transaction extends Model
 protected $fillable = [
     'id',
     'sender_account_id',
-    'receiver_account_id',  // (nullable)
-    'external_account_number', // (nullable)
+    'receiver_account_id', 
+    'external_account_number',
     'amount',
     'currency',
     'description',
     'category',
-    'transaction_type', // (internal, external)
+    'transaction_type', 
     'created_at',
 ];
 
-// Posiljalac
 public function senderAccount(){
     return $this->belongsTo(Account::class, 'sender_account_id');
 }
 
-//Primalac 
 public function receiverAccount(){
     return $this->belongsTo(Account::class, 'receiver_account_id');
 }

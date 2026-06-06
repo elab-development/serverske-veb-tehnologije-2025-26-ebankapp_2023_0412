@@ -7,23 +7,19 @@ use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-use function Pest\Laravel\delete;
-
 class TransactionController extends Controller
 {
     public function index()
     {
-        //get
         $transaction = Transaction::with(['senderAccount', 'receiverAccount'])->get();
         return response()->json($transaction);
     }
 
     public function store(Request $request)
     {
-        //post
         $request->validate([
-            'sender_account_id' => 'required|exists:account,id',
-            'receiver_account_id' => 'nullable|exists:account,id',
+            'sender_account_id' => 'required|exists:accounts,id',
+            'receiver_account_id' => 'nullable|exists:accounts,id',
             'external_account_number' => 'nullable|string',
             'amount' => 'required|numeric|min:0.01',
             'currency' => 'required|string|size:3',
@@ -38,14 +34,12 @@ class TransactionController extends Controller
 
     public function show(string $id)
     {
-        //get
         $transaction = Transaction::with(['senderAccount', 'receiverAccount'])->findOrFail($id);
         return response()->json($transaction);    
     }
 
     public function update(Request $request, string $id)
     {
-        //put
         $transaction = Transaction::findOrFail($id);
         $transaction->update($request->only(['description', 'category']));
         return response()->json($transaction);
@@ -53,7 +47,6 @@ class TransactionController extends Controller
 
     public function destroy(string $id)
     {
-        //delete
         $transaction = Transaction::findOrFail($id);
         $transaction->delete();
         return response()->json(['message'=>'Transakcija je obrisana.']);
@@ -62,8 +55,8 @@ class TransactionController extends Controller
     public function transfer(Request $request)
     {
         $request->validate([
-            'sender_account_id' => 'required|exists:account,id',
-            'receiver_account_id' => 'required|exists:account,id',
+            'sender_account_id' => 'required|exists:accounts,id',
+            'receiver_account_id' => 'required|exists:accounts,id',
             'amount' => 'required|numeric|min:0.01',
             'category' => 'nullable|string',
             'description' => 'nullable|string',

@@ -22,7 +22,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('accounts/{id}/balance',      [AccountController::class, 'getBalance']);
     Route::patch('users/{id}/role', [UserController::class, 'changeRole']);
     Route::patch('/users/{id}/block', [UserController::class, 'block']);
-
+    Route::patch('users/{id}/unblock', [UserController::class, 'unblock']);
+    Route::post('users/{id}/change-password', [UserController::class, 'changePassword']);
 
 
     Route::get('/user', function (Request $request) {

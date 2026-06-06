@@ -7,21 +7,23 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 use App\Enums\Role;
 
 class User extends Authenticatable
 {
-    use HasFactory, HasUuids, Notifiable;
+    use HasFactory, HasUuids, HasApiTokens, Notifiable;
 
-   protected $fillable = [
-    'name',
-    'email',
-    'password',
-    'role',
-    'phone',
-    'jmbg',
-    'address',
-];
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'role',
+        'phone',
+        'jmbg',
+        'address',
+        'is_active',
+    ];
 
     protected $hidden = [
         'password',
@@ -32,8 +34,9 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password'=> 'hashed',
-            'role'=> Role::class,
+            'password'          => 'hashed',
+            'role'              => Role::class,
+            'is_active'         => 'boolean',
         ];
     }
 
@@ -62,5 +65,32 @@ class User extends Authenticatable
     public function hasRole(Role $role): bool
     {
         return $this->role === $role;
+    }
+
+
+    public function isActive(): bool
+    {
+        return $this->is_active === true;
+    }
+
+    public function isBlocked(): bool
+    {
+        return $this->is_active === false;
+    }
+
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopeBlocked($query)
+    {
+        return $query->where('is_active', false);
+    }
+
+    public function scopeByRole($query, Role $role)
+    {
+        return $query->where('role', $role->value);
     }
 }

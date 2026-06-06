@@ -12,37 +12,6 @@ use Exception;
 class UserController extends Controller
 {
 
-    public function index(Request $request)
-    {
-        try {
-            $query = User::with('accounts');
-
-            if ($request->filled('role')) {
-                $query->where('role', $request->role);
-            }
-
-            if ($request->has('is_active')) {
-                $query->where('is_active', filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN));
-            }
-
-            $users = $query->get();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Korisnici su uspešno učitani.',
-                'data'    => $users,
-            ], 200);
-
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Greška pri učitavanju korisnika.',
-                'error'   => $e->getMessage(),
-            ], 500);
-        }
-    }
-
-
     public function store(Request $request)
     {
         try {
@@ -278,4 +247,46 @@ class UserController extends Controller
             ], 500);
         }
     }
+    public function index(Request $request)
+{
+    try {
+        $query = User::with('accounts');
+
+        if ($request->filled('role')) {
+            $query->where('role', $request->role);
+        }
+
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('email', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        if ($request->filled('is_active')) {
+            $query->where('is_active', filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN));
+        }
+
+        $perPage = $request->get('per_page', 10);
+        $users = $query->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'data'    => $users->items(),
+            'meta'    => [
+                'current_page' => $users->currentPage(),
+                'per_page'     => $users->perPage(),
+                'total'        => $users->total(),
+                'last_page'    => $users->lastPage(),
+            ]
+        ], 200);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Greska pri ucitavanju korisnika.',
+            'error'   => $e->getMessage(),
+        ], 500);
+    }
+}
 }

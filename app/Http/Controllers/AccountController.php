@@ -12,27 +12,6 @@ use Exception;
 class AccountController extends Controller
 {
 
-    public function index()
-    {
-        try {
-            $userId = auth()->id();
-            $accounts = Account::where('user_id', $userId)->get();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Računi su uspešno učitani.',
-                'data' => $accounts
-            ], 200);
-
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Došlo je do greške prilikom učitavanja računa.',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
     public function store(Request $request)
     {
         try {
@@ -230,4 +209,43 @@ class AccountController extends Controller
         ], 500);
     }
 }
+    public function index(Request $request)
+    {
+        try {
+            $query = Account::where('user_id', auth()->id());
+
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+
+            if ($request->filled('type')) {
+                $query->where('type', $request->type);
+            }
+
+            if ($request->filled('currency')) {
+                $query->where('currency', $request->currency);
+            }
+
+            $perPage = $request->get('per_page', 10);
+            $accounts = $query->paginate($perPage);
+
+            return response()->json([
+                'success' => true,
+                'data'    => $accounts->items(),
+                'meta'    => [
+                    'current_page' => $accounts->currentPage(),
+                    'per_page'     => $accounts->perPage(),
+                    'total'        => $accounts->total(),
+                    'last_page'    => $accounts->lastPage(),
+                ]
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Greska pri ucitavanju racuna.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

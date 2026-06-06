@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Exception;
@@ -107,5 +108,92 @@ class AuthController extends Controller
             'success' => true,
             'user'    => $request->user(),
         ], 200);
+    }
+
+    public function forgotPassword(Request $request)
+    {
+    try {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        
+        PasswordReset::where('email', $request->email)->delete();
+
+        $token = \Illuminate\Support\Str::random(64);
+
+        PasswordReset::create([
+            'email'      => $request->email,
+            'token'      => $token,
+            'expires_at' => now()->addMinutes(30),
+        ]);
+
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Reset token generated successfully.',
+            'token'   => $token,
+        ], 200);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to generate reset token.',
+            'error'   => $e->getMessage(),
+        ], 500);
+    }
+
+    
+    }
+
+    public function resetPassword(Request $request)
+{
+    try {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'token' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+
+        $resetToken = PasswordReset::where('email', $request->email)->where('token', $request->token)->first();
+
+        if (!$resetToken) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid token.',
+            ], 400);
+        }
+
+        // Provjeri da li je token istekao (30 minuta)
+        if ($resetToken->isExpired()) {
+            $resetToken->delete();
+            return response()->json([
+                'success' => false,
+                'message' => 'Token has expired. Please request a new one.',
+            ], 400);
+        }
+
+
+        $user = User::where('email', $request->email)->first();
+        $user->update(['password' => $request->password]);
+
+
+        $resetToken->delete();
+
+        $user->tokens()->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password reset successfully. Please login again.',
+        ], 200);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Password reset failed.',
+            'error'   => $e->getMessage(),
+        ], 500);
+    }
     }
 }

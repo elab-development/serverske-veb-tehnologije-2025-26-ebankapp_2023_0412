@@ -243,7 +243,7 @@ class AccountController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Greška pri učitavanju računa.',
+                'message' => 'Greska pri ucitavanju racuna.',
                 'error'   => $e->getMessage(),
             ], 500);
         }

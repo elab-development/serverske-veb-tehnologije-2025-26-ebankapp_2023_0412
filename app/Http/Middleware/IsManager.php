@@ -12,7 +12,7 @@ class IsManager
         if (!$request->user() || (!$request->user()->isAdmin() && !$request->user()->isManager())) {
             return response()->json([
                 'success' => false,
-                'message' => 'Access denied. Manager or Admin only.',
+                'message' => 'Odbijen pristup.',
             ], 403);
         }
 

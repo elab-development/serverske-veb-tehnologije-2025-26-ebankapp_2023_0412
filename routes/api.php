@@ -31,6 +31,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('transactions',       [TransactionController::class, 'store']);
     Route::get('transactions/{id}',   [TransactionController::class, 'show']);
     Route::get('transactions/search', [TransactionController::class, 'search']);
+    Route::get('accounts/search',  [AccountController::class, 'search']);
+    Route::get('users/search',     [UserController::class, 'search']);
     Route::post('transfer',           [TransactionController::class, 'transfer']);
 
     Route::post('users/{id}/change-password', [UserController::class, 'changePassword']);

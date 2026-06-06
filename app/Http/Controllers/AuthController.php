@@ -30,7 +30,7 @@ class AuthController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Registration successful.',
+                'message' => 'Registracija uspesna.',
                 'token'   => $token,
                 'user'    => $user,
             ], 201);
@@ -38,7 +38,7 @@ class AuthController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Registration failed.',
+                'message' => 'Registracija neuspesna.',
                 'error'   => $e->getMessage(),
             ], 500);
         }
@@ -57,7 +57,7 @@ class AuthController extends Controller
             if (!$user || !Hash::check($request->password, $user->password)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Invalid credentials.',
+                    'message' => 'Neispravni kredencijali.',
                 ], 401);
             }
 
@@ -66,7 +66,7 @@ class AuthController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Login successful.',
+                'message' => 'Prijava uspesna.',
                 'token'   => $token,
                 'token_type' => 'Bearer', 
                 'user'    => $user,
@@ -75,7 +75,7 @@ class AuthController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Login failed.',
+                'message' => 'Prijava neuspesna.',
                 'error'   => $e->getMessage(),
             ], 500);
         }
@@ -89,13 +89,13 @@ class AuthController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Logged out successfully.',
+                'message' => 'Odjava uspesna.',
             ], 200);
 
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Logout failed.',
+                'message' => 'Odjava neuspesna.',
                 'error'   => $e->getMessage(),
             ], 500);
         }

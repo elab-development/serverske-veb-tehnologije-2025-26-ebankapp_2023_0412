@@ -144,7 +144,7 @@ class TransactionController extends Controller
     $transactions = $query->get();
 
     if ($transactions->isEmpty()) {
-        return response()->json(['message' => 'No transactions found.'], 404);
+        return response()->json(['message' => 'Ne postoje transakcije.'], 404);
     }
 
         return response()->json($transactions);

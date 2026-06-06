@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AccountController;
@@ -10,11 +11,18 @@ Route::get('/status', function () {
     return response()->json(['status' => 'API is running']);
 });
 
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login',    [AuthController::class, 'login']);
+
+
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('accounts', AccountController::class);
     Route::apiResource('transactions', TransactionController::class);
     Route::apiResource('users', UserController::class);
+
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/me',      [AuthController::class, 'me']);
 
     Route::post('transfer', [TransactionController::class, 'transfer']);
     Route::get('transactions/search', [TransactionController::class, 'search']);

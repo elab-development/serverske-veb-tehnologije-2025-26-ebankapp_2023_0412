@@ -296,4 +296,54 @@ class UserController extends Controller
         ], 500);
     }
 }
+public function search(Request $request)
+{
+    try {
+        $query = User::with('accounts');
+
+        if ($request->filled('name')) {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+
+        if ($request->filled('email')) {
+            $query->where('email', 'like', '%' . $request->email . '%');
+        }
+
+        if ($request->filled('role')) {
+            $query->where('role', $request->role);
+        }
+
+        if ($request->filled('is_active')) {
+            $query->where('is_active', filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN));
+        }
+
+        $perPage = $request->get('per_page', 10);
+        $users = $query->paginate($perPage);
+
+        if ($users->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No users found.',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data'    => $users->items(),
+            'meta'    => [
+                'current_page' => $users->currentPage(),
+                'per_page'     => $users->perPage(),
+                'total'        => $users->total(),
+                'last_page'    => $users->lastPage(),
+            ]
+        ], 200);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Search failed.',
+            'error'   => $e->getMessage(),
+        ], 500);
+    }
+}
 }

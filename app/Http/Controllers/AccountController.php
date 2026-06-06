@@ -246,6 +246,64 @@ class AccountController extends Controller
                 'message' => 'Greska pri ucitavanju racuna.',
                 'error'   => $e->getMessage(),
             ], 500);
-        }
+        } 
     }
+    public function search(Request $request)
+{
+    try {
+        $query = Account::where('user_id', auth()->id());
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->filled('currency')) {
+            $query->where('currency', $request->currency);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('min_balance')) {
+            $query->where('balance', '>=', $request->min_balance);
+        }
+
+        if ($request->filled('max_balance')) {
+            $query->where('balance', '<=', $request->max_balance);
+        }
+
+        if ($request->filled('account_number')) {
+            $query->where('account_number', 'like', '%' . $request->account_number . '%');
+        }
+
+        $perPage = $request->get('per_page', 10);
+        $accounts = $query->paginate($perPage);
+
+        if ($accounts->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No accounts found.',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data'    => $accounts->items(),
+            'meta'    => [
+                'current_page' => $accounts->currentPage(),
+                'per_page'     => $accounts->perPage(),
+                'total'        => $accounts->total(),
+                'last_page'    => $accounts->lastPage(),
+            ]
+        ], 200);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Search failed.',
+            'error'   => $e->getMessage(),
+        ], 500);
+    }
+}
 }

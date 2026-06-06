@@ -6,15 +6,10 @@ use App\Models\Account;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Exception;
 
 class TransactionController extends Controller
 {
-    public function index()
-    {
-        $transaction = Transaction::with(['senderAccount', 'receiverAccount'])->get();
-        return response()->json($transaction);
-    }
-
     public function store(Request $request)
     {
         $request->validate([
@@ -161,6 +156,59 @@ class TransactionController extends Controller
 
     return response()->json($transactions);
 }
+
+public function index(Request $request)
+{
+    try {
+        $query = Transaction::with(['senderAccount', 'receiverAccount']);
+
+        // Filtriranje
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
+
+        if ($request->filled('currency')) {
+            $query->where('currency', $request->currency);
+        }
+
+        if ($request->filled('transaction_type')) {
+            $query->where('transaction_type', $request->transaction_type);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+
+        $perPage = $request->get('per_page', 10);
+        $transactions = $query->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'data'    => $transactions->items(),
+            'meta'    => [
+                'current_page' => $transactions->currentPage(),
+                'per_page'     => $transactions->perPage(),
+                'total'        => $transactions->total(),
+                'last_page'    => $transactions->lastPage(),
+            ]
+        ], 200);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Greska pri ucitavanju transakcija.',
+            'error'   => $e->getMessage(),
+        ], 500);
+    }
+}
+
+
+
 }
 
 

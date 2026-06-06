@@ -218,6 +218,13 @@ class UserController extends Controller
     public function changePassword(Request $request, string $id)
     {
         try {
+
+            if ((string) $request->user()->id !== (string) $id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Nemate dozvolu da menjate lozinku drugog korisnika.',
+                ], 403);
+            }
             $user = User::findOrFail($id);
 
             $request->validate([

@@ -60,6 +60,12 @@ class TransactionController extends Controller
         $sender = Account::findOrFail($request->sender_account_id);
         $receiver = Account::findOrFail($request->receiver_account_id);
         
+        if ((string) $sender->user_id !== (string) auth()->id()) {
+            return response()->json([
+                'message' => 'Nemate dozvolu da šaljete sredstva sa ovog računa.',
+            ], 403);
+        }
+
         if ($sender->id === $receiver->id){
             return response()->json(['message'=>'Ne moze slati sredstva na isti racun.'], 400);
         }
@@ -147,7 +153,14 @@ class TransactionController extends Controller
 
     public function byAccount(string $id)
 {
-    $account = Account::findOrFail($id);
+    $account = Account::where('user_id', auth()->id())->find($id);
+
+        if (!$account) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Račun nije pronađen ili nemate pristup.',
+            ], 404);
+        }
 
     $transactions = Transaction::with(['senderAccount', 'receiverAccount'])
         ->where('sender_account_id', $id)

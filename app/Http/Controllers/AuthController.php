@@ -7,6 +7,7 @@ use App\Models\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Exception;
+use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
@@ -17,14 +18,13 @@ class AuthController extends Controller
                 'name'     => 'required|string|max:100',
                 'email'    => 'required|email|unique:users,email',
                 'password' => 'required|string|min:8|confirmed',
-                'role'     => 'nullable|in:admin,manager,client',
             ]);
 
             $user = User::create([
                 'name'     => $request->name,
                 'email'    => $request->email,
                 'password' => $request->password,
-                'role'     => $request->role ?? 'client',
+                'role'     => 'client',
             ]);
 
             $token = $user->createToken('auth_token')->plainTextToken;
@@ -129,10 +129,17 @@ class AuthController extends Controller
         ]);
 
 
+        Mail::raw(
+    "Vaš token za resetovanje lozinke je:\n\n{$token}\n\nToken važi 30 minuta.",
+    function ($message) use ($request) {
+        $message->to($request->email)
+                ->subject('Resetovanje lozinke');
+    }
+);
+
         return response()->json([
             'success' => true,
-            'message' => 'Reset token generated successfully.',
-            'token'   => $token,
+            'message' => 'Ukoliko nalog postoji, poslaćemo vam email sa uputstvima.',
         ], 200);
 
     } catch (Exception $e) {

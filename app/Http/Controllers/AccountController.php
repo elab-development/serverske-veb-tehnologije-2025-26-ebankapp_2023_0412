@@ -19,7 +19,7 @@ class AccountController extends Controller
                 'account_number' => 'required|string|unique:accounts,account_number|max:30',
                 'balance'        => 'required|numeric|min:0',
                 'currency'    => 'required|in:RSD,EUR,USD',
-                'type'    => 'required|in:dinarski, devizni',
+                'type'    => 'required|in:dinarski,devizni',
                 'status'  => 'required|in:active,frozen,closed',
             ]);
 
@@ -85,12 +85,12 @@ class AccountController extends Controller
     public function update(Request $request,string $id)
     {
         try {
-            $account = Account::where('user_id', auth()->id())->find($id);
+            $account = Account::find($id);
 
             if (!$account) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Račun nije pronađen ili nemate pristup.'
+                    'message' => 'Račun nije pronađen.'
                 ], 404);
             }
 
@@ -128,12 +128,12 @@ class AccountController extends Controller
     public function destroy(string $id)
     {
         try {
-            $account = Account::where('user_id', auth()->id())->find($id);
+            $account = Account::find($id);
 
             if (!$account) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Račun nije pronađen ili nemate pristup.'
+                    'message' => 'Račun nije pronađen.'
                 ], 404);
             }
 

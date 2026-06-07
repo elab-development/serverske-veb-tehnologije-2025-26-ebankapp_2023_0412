@@ -12,13 +12,14 @@ return new class extends Migration
             $table->string('phone')->nullable()->after('email');
             $table->string('jmbg', 13)->nullable()->after('phone');
             $table->string('address')->nullable()->after('jmbg');
+            $table->boolean('is_active')->default(true)->after('address');
         });
     }
 
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['phone', 'jmbg', 'address']);
+            $table->dropColumn(['phone', 'jmbg', 'address', 'is_active']);
         });
     }
 };

@@ -9,14 +9,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('transactions', function(Blueprint $table){
-            $table->dropColumn('column');
+            $table->dropColumn('add_column');
         });
     }
 
     public function down(): void
     {
         Schema::table('transactions', function(Blueprint $table){
-            $table->decimal('column', 15, 2)->default(0);
+            $table->decimal('add_column', 15, 2)->default(0);
         });
     }
 };

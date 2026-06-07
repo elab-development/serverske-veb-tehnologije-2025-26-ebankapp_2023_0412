@@ -23,6 +23,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('accounts',          [AccountController::class, 'index']);
     Route::post('accounts',         [AccountController::class, 'store']);
+    Route::get('accounts/search',  [AccountController::class, 'search']);
     Route::get('accounts/{id}',     [AccountController::class, 'show']);
     Route::get('accounts/{id}/balance',       [AccountController::class, 'getBalance']);
     Route::get('accounts/{id}/transactions',  [TransactionController::class, 'byAccount']);
@@ -31,7 +32,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('transactions',       [TransactionController::class, 'store']);
     Route::get('transactions/{id}',   [TransactionController::class, 'show']);
     Route::get('transactions/search', [TransactionController::class, 'search']);
-    Route::get('accounts/search',  [AccountController::class, 'search']);
     Route::get('users/search',     [UserController::class, 'search']);
     Route::post('transfer',           [TransactionController::class, 'transfer']);
 

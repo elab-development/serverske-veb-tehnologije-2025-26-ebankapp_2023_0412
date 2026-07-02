@@ -279,6 +279,18 @@ class AccountController extends Controller
 
         $perPage = $request->get('per_page', 10);
         $accounts = $query->paginate($perPage);
+        
+         $sortBy = $request->get('sort_by', 'created_at');
+        $sortDir = strtolower($request->get('sort_dir', 'desc'));
+
+        $allowedSortColumns = ['created_at', 'balance', 'account_number', 'currency', 'type'];
+        $sortDir = in_array($sortDir, ['asc', 'desc']) ? $sortDir : 'desc';
+
+        if (in_array($sortBy, $allowedSortColumns)) {
+            $query->orderBy($sortBy, $sortDir);
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
 
         if ($accounts->isEmpty()) {
             return response()->json([

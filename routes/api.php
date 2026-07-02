@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CurrencyController;
 
 Route::get('/status', function () {
     return response()->json(['status' => 'API is running']);
@@ -60,3 +61,6 @@ Route::middleware(['auth:sanctum', 'isActive', 'isAdmin'])->group(function () {
     Route::patch('users/{id}/unblock', [UserController::class, 'unblock']);
     Route::get('users/search',     [UserController::class, 'search']);
 });
+
+Route::get('/currencies/rates/{base?}',    [CurrencyController::class, 'rates']);
+Route::get('/currencies/{code}/countries', [CurrencyController::class, 'countries']);

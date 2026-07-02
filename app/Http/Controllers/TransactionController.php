@@ -141,6 +141,16 @@ class TransactionController extends Controller
         $query->where('description', 'like', '%' . $request->search . '%');
     }
 
+     $sortBy = $request->get('sort_by', 'created_at');
+        $sortDir = strtolower($request->get('sort_dir', 'desc'));
+        $allowedSortColumns = ['created_at', 'amount', 'category'];
+        $sortDir = in_array($sortDir, ['asc', 'desc']) ? $sortDir : 'desc';
+
+        if (in_array($sortBy, $allowedSortColumns)) {
+            $query->orderBy($sortBy, $sortDir);
+        }
+
+
     $transactions = $query->get();
 
     if ($transactions->isEmpty()) {
@@ -201,6 +211,18 @@ public function index(Request $request)
         if ($request->filled('date_to')) {
             $query->whereDate('created_at', '<=', $request->date_to);
         }
+        
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortDir = strtolower($request->get('sort_dir', 'desc'));
+
+        $allowedSortColumns = ['created_at', 'amount', 'category', 'currency'];
+        $sortDir = in_array($sortDir, ['asc', 'desc']) ? $sortDir : 'desc';
+
+        if (in_array($sortBy, $allowedSortColumns)) {
+            $query->orderBy($sortBy, $sortDir);
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
 
 
         $perPage = $request->get('per_page', 10);
@@ -226,7 +248,30 @@ public function index(Request $request)
     }
 }
 
+public function spendingByCategory(Request $request)
+    {
+        $userId = auth()->id();
 
+        $stats = DB::table('transactions')
+            ->join('accounts', 'transactions.sender_account_id', '=', 'accounts.id')
+            ->join('users', 'accounts.user_id', '=', 'users.id')
+            ->where('users.id', $userId)
+            ->select(
+                'transactions.category',
+                'transactions.currency',
+                DB::raw('COUNT(transactions.id) as broj_transakcija'),
+                DB::raw('SUM(transactions.amount) as ukupan_iznos'),
+                DB::raw('AVG(transactions.amount) as prosecan_iznos')
+            )
+            ->groupBy('transactions.category', 'transactions.currency')
+            ->orderByDesc('ukupan_iznos')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $stats,
+        ], 200);
+    }
 
 }
 

@@ -211,7 +211,30 @@ public function index(Request $request)
     }
 }
 
+public function spendingByCategory(Request $request)
+    {
+        $userId = auth()->id();
 
+        $stats = DB::table('transactions')
+            ->join('accounts', 'transactions.sender_account_id', '=', 'accounts.id')
+            ->join('users', 'accounts.user_id', '=', 'users.id')
+            ->where('users.id', $userId)
+            ->select(
+                'transactions.category',
+                'transactions.currency',
+                DB::raw('COUNT(transactions.id) as broj_transakcija'),
+                DB::raw('SUM(transactions.amount) as ukupan_iznos'),
+                DB::raw('AVG(transactions.amount) as prosecan_iznos')
+            )
+            ->groupBy('transactions.category', 'transactions.currency')
+            ->orderByDesc('ukupan_iznos')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $stats,
+        ], 200);
+    }
 
 }
 

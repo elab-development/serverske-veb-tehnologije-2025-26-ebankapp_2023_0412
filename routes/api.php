@@ -16,7 +16,7 @@ Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password',  [AuthController::class, 'resetPassword']);
 
 //KLIJENT
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum', 'isActive')->group(function () {
 
     Route::get('/me',      [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -32,7 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('transactions/{id}',   [TransactionController::class, 'show']);
     Route::get('transactions/search', [TransactionController::class, 'search']);
     Route::get('accounts/search',  [AccountController::class, 'search']);
-    Route::get('users/search',     [UserController::class, 'search']);
+    //Route::get('users/search',     [UserController::class, 'search']);
     Route::post('transfer',           [TransactionController::class, 'transfer']);
 
     Route::post('users/{id}/change-password', [UserController::class, 'changePassword']);
@@ -43,7 +43,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // MANAGER I ADMIN
-Route::middleware(['auth:sanctum', 'isManager'])->group(function () {
+Route::middleware(['auth:sanctum','isActive', 'isManager'])->group(function () {
 
     Route::put('accounts/{id}',    [AccountController::class, 'update']);
     Route::delete('accounts/{id}', [AccountController::class, 'destroy']);
@@ -53,9 +53,10 @@ Route::middleware(['auth:sanctum', 'isManager'])->group(function () {
 });
 
 // SAMO ADMIN
-Route::middleware(['auth:sanctum', 'isAdmin'])->group(function () {
+Route::middleware(['auth:sanctum', 'isActive', 'isAdmin'])->group(function () {
 
     Route::apiResource('users', UserController::class);
+    Route::get('users/search',     [UserController::class, 'search']);
     Route::patch('users/{id}/role',    [UserController::class, 'changeRole']);
     Route::patch('users/{id}/block',   [UserController::class, 'block']);
     Route::patch('users/{id}/unblock', [UserController::class, 'unblock']);

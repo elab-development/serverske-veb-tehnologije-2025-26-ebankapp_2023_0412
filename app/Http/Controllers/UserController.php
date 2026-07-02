@@ -141,6 +141,7 @@ class UserController extends Controller
             }
 
             $user->update(['is_active' => false]);
+            $user->tokens()->delete();
 
             return response()->json([
                 'success' => true,

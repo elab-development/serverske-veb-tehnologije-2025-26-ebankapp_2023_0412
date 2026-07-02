@@ -62,6 +62,13 @@ class AuthController extends Controller
                 ], 401);
             }
 
+            if ($user->isBlocked()){
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Vas nalog je blokiran. Kontaktirajte admina'
+                ], 403);
+            }
+
             $user->tokens()->delete();
             $token = $user->createToken('auth_token')->plainTextToken;
 

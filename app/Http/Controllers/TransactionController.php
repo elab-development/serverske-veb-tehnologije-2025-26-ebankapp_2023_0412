@@ -118,6 +118,14 @@ class TransactionController extends Controller
     {
         $query = Transaction::with(['senderAccount', 'receiverAccount']);
 
+        if (auth()->user()->role->value === 'client') {
+            $userAccountIds = Account::where('user_id', auth()->id())->pluck('id');
+            $query->where(function ($q) use ($userAccountIds) {
+                $q->whereIn('sender_account_id', $userAccountIds)
+                  ->orWhereIn('receiver_account_id', $userAccountIds);
+            });
+        }
+            
         if($request->filled('account_id')){
             $accountId = $request->account_id;
             $query->where(function($q) use ($accountId){
@@ -166,6 +174,13 @@ public function index(Request $request)
     try {
         $query = Transaction::with(['senderAccount', 'receiverAccount']);
 
+        if (auth()->user()->role->value === 'client') {
+            $userAccountIds = Account::where('user_id', auth()->id())->pluck('id');
+            $query->where(function ($q) use ($userAccountIds) {
+                $q->whereIn('sender_account_id', $userAccountIds)
+                  ->orWhereIn('receiver_account_id', $userAccountIds);
+            });
+        }
         // Filtriranje
         if ($request->filled('category')) {
             $query->where('category', $request->category);

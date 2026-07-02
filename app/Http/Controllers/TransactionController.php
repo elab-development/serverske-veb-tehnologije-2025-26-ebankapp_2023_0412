@@ -133,6 +133,16 @@ class TransactionController extends Controller
         $query->where('description', 'like', '%' . $request->search . '%');
     }
 
+     $sortBy = $request->get('sort_by', 'created_at');
+        $sortDir = strtolower($request->get('sort_dir', 'desc'));
+        $allowedSortColumns = ['created_at', 'amount', 'category'];
+        $sortDir = in_array($sortDir, ['asc', 'desc']) ? $sortDir : 'desc';
+
+        if (in_array($sortBy, $allowedSortColumns)) {
+            $query->orderBy($sortBy, $sortDir);
+        }
+
+
     $transactions = $query->get();
 
     if ($transactions->isEmpty()) {
@@ -185,6 +195,18 @@ public function index(Request $request)
 
         if ($request->filled('date_to')) {
             $query->whereDate('created_at', '<=', $request->date_to);
+        }
+        
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortDir = strtolower($request->get('sort_dir', 'desc'));
+
+        $allowedSortColumns = ['created_at', 'amount', 'category', 'currency'];
+        $sortDir = in_array($sortDir, ['asc', 'desc']) ? $sortDir : 'desc';
+
+        if (in_array($sortBy, $allowedSortColumns)) {
+            $query->orderBy($sortBy, $sortDir);
+        } else {
+            $query->orderBy('created_at', 'desc');
         }
 
 

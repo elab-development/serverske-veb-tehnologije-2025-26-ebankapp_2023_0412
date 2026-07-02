@@ -20,7 +20,7 @@ return new class extends Migration
             ->constrained('accounts')
             ->onDelete('set null');
 
-            $table->string('external_account_id')
+            $table->string('external_account_number')
             ->nullable();
 
             $table->decimal('amount', 15, 2);

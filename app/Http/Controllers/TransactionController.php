@@ -7,6 +7,7 @@ use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Exception;
+use App\Http\Controllers\CurrencyController;
 
 class TransactionController extends Controller
 {
@@ -74,30 +75,18 @@ class TransactionController extends Controller
             return response()->json(['message'=>'Nedovoljno sredstava na racunu.'], 400);
         }
 
-        $amountReceived = $request->amount;
         $senderCurrency = is_string($sender->currency) ? $sender->currency : $sender->currency->value;
         $receiverCurrency = is_string($receiver->currency) ? $receiver->currency : $receiver->currency->value;
 
-        if ($senderCurrency !== $receiverCurrency) {
-            $rates = [
-                'EUR_RSD' => 117.20,
-                'RSD_EUR' => 0.0085,
-                'USD_RSD' => 108.50,
-                'RSD_USD' => 0.0092,
-                'EUR_USD' => 1.08,
-                'USD_EUR' => 0.93,
-            ];
+        $rate = CurrencyController::exchangeRate($senderCurrency, $receiverCurrency);
 
-            $par = $senderCurrency . '_' . $receiverCurrency;
-
-            if (!isset($rates[$par])) {
-                return response()->json([
-                    'message' => "Kursna lista za par {$par} nije definisana."
-                ], 400);
-            }
-
-            $amountReceived = round($request->amount * $rates[$par], 2);
+        if ($rate === null) {
+            return response()->json([
+                'message' => "Kursna lista za par {$senderCurrency}_{$receiverCurrency} nije dostupna.",
+            ], 400);
         }
+
+        $amountReceived = round($request->amount * $rate, 2);
 
         DB::transaction(function () use ($sender, $receiver, $request, $amountReceived, $senderCurrency) {
             $sender->decrement('balance', $request->amount);
@@ -118,8 +107,10 @@ class TransactionController extends Controller
             'message'         => 'Prenos sredstava je uspješno izvršen.',
             'money_sent'      => $request->amount,
             'currency_sent'   => $senderCurrency,
+            'exchange_rate' => $rate,
             'amount_received' => $amountReceived,
             'currency_received' => $receiverCurrency,
+
         ], 201);
     }
 

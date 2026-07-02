@@ -1,58 +1,250 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# E-Banking Web Aplikacija
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Laravel REST API aplikacija za e-bankarstvo. Omogućava korisnicima pregled stanja na računu, uvid u transakcije, prenos sredstava između računa uz podršku za devizne račune i dnevni kurs, kao i pretragu troškova po nazivu i kategorijama.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Tehnologije
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **PHP 8.5** / **Laravel 11**
+- **SQLite** (baza podataka)
+- **Laravel Sanctum** (autentifikacija tokenom)
+- **Postman** (testiranje API-ja)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Pokretanje aplikacije
 
 ```bash
-composer require laravel/boost --dev
+# 1. Kloniranje repozitorijuma
+git clone https://github.com/elab-development/serverske-veb-tehnologije-2025-26-ebankapp_2023_0412
+cd serverske-veb-tehnologije-2025-26-ebankapp_2023_0412
 
-php artisan boost:install
+# 2. Instalacija zavisnosti
+composer install
+
+# 3. Kopiranje .env fajla
+cp .env.example .env
+php artisan key:generate
+
+# 4. Pokretanje migracija
+php artisan migrate:fresh
+
+# 5. Pokretanje servera
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+---
 
-## Contributing
+## Modeli
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### User
+Predstavlja korisnika sistema. Ima ulogu (`admin`, `manager`, `client`) i može posjedovati više računa.
 
-## Code of Conduct
+### Account
+Predstavlja bankovni račun korisnika. Može biti dinarski ili devizni (RSD, EUR, USD). Ima stanje (`balance`), status (`active`, `frozen`, `closed`) i IBAN broj.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### Transaction
+Predstavlja transakciju između dva računa. Čuva podatke o pošiljaocu, primaocu, iznosu, valuti, kategoriji i opisu.
 
-## Security Vulnerabilities
+### PasswordReset
+Pomoćni model za reset lozinke. Čuva email, token i vrijeme isteka.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
+## Enumi
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+| Enum | Vrijednosti |
+|---|---|
+| `Role` | admin, manager, client |
+| `AccType` | dinarski, devizni |
+| `AccStatus` | active, frozen, closed |
+| `Currency` | RSD, EUR, USD |
+
+---
+
+## Migracije
+
+| Migracija | Tip |
+|---|---|
+| `create_users_table` | Kreiranje tabele |
+| `create_accounts_table` | Kreiranje tabele |
+| `create_transactions_table` | Kreiranje tabele |
+| `modify_transactions_table` | Izmjena postojeće kolone |
+| `change_balance_account` | Izmjena kolone (preciznost) |
+| `add_to_account` | Dodavanje kolone (iban) |
+| `remove_from_account` | Brisanje kolone |
+| `add_column_transaction_table` | Dodavanje kolone |
+| `remove_column_transaction_table` | Brisanje kolone |
+| `add_profile_fields_to_users_table` | Dodavanje kolona (phone, jmbg, address, is_active) |
+| `change_name_length_in_users_table` | Izmjena dužine kolone |
+| `add_unique_constraints_to_users_table` | Postavljanje ograničenja |
+| `create_password_reset_tokens` | Kreiranje tabele |
+| `create_personal_access_tokens_table` | Kreiranje tabele (Sanctum) |
+
+---
+
+## Uloge i pristup rutama
+
+| Akcija | Neulogovan | Client | Manager | Admin |
+|---|---|---|---|---|
+| register / login | ✅ | ✅ | ✅ | ✅ |
+| Pregled svojih računa | ❌ | ✅ | ✅ | ✅ |
+| Kreiranje računa | ❌ | ✅ | ✅ | ✅ |
+| Transfer sredstava | ❌ | ✅ | ✅ | ✅ |
+| Pretraga transakcija | ❌ | ✅ | ✅ | ✅ |
+| Izmjena/brisanje računa | ❌ | ❌ | ✅ | ✅ |
+| Upravljanje korisnicima | ❌ | ❌ | ❌ | ✅ |
+| Blokiranje korisnika | ❌ | ❌ | ❌ | ✅ |
+| Promjena uloge | ❌ | ❌ | ❌ | ✅ |
+
+---
+
+## API Rute
+
+### Javne rute (bez autentifikacije)
+
+| Metoda | Ruta | Opis |
+|---|---|---|
+| GET | `/api/status` | Provjera statusa API-ja |
+| POST | `/api/register` | Registracija korisnika |
+| POST | `/api/login` | Prijava korisnika |
+| POST | `/api/forgot-password` | Zahtjev za reset lozinke |
+| POST | `/api/reset-password` | Reset lozinke tokenom |
+
+### Zaštićene rute — Client (auth:sanctum)
+
+| Metoda | Ruta | Opis |
+|---|---|---|
+| GET | `/api/me` | Podaci o ulogovanom korisniku |
+| POST | `/api/logout` | Odjava |
+| GET | `/api/accounts` | Lista računa (paginacija + filtriranje) |
+| POST | `/api/accounts` | Kreiranje računa |
+| GET | `/api/accounts/{id}` | Detalji računa |
+| GET | `/api/accounts/{id}/balance` | Stanje računa |
+| GET | `/api/accounts/{id}/transactions` | Transakcije računa |
+| GET | `/api/accounts/search` | Pretraga računa |
+| GET | `/api/transactions` | Lista transakcija (paginacija + filtriranje) |
+| POST | `/api/transactions` | Kreiranje transakcije |
+| GET | `/api/transactions/{id}` | Detalji transakcije |
+| GET | `/api/transactions/search` | Pretraga transakcija |
+| POST | `/api/transfer` | Prenos sredstava između računa |
+| POST | `/api/users/{id}/change-password` | Promjena lozinke |
+
+### Zaštićene rute — Manager i Admin
+
+| Metoda | Ruta | Opis |
+|---|---|---|
+| PUT | `/api/accounts/{id}` | Izmjena računa |
+| DELETE | `/api/accounts/{id}` | Brisanje računa |
+| PUT | `/api/transactions/{id}` | Izmjena transakcije |
+| DELETE | `/api/transactions/{id}` | Brisanje transakcije |
+
+### Zaštićene rute — Admin
+
+| Metoda | Ruta | Opis |
+|---|---|---|
+| GET | `/api/users` | Lista korisnika |
+| POST | `/api/users` | Kreiranje korisnika |
+| GET | `/api/users/{id}` | Detalji korisnika |
+| PUT | `/api/users/{id}` | Izmjena korisnika |
+| DELETE | `/api/users/{id}` | Brisanje korisnika |
+| GET | `/api/users/search` | Pretraga korisnika |
+| PATCH | `/api/users/{id}/role` | Promjena uloge |
+| PATCH | `/api/users/{id}/block` | Blokiranje korisnika |
+| PATCH | `/api/users/{id}/unblock` | Odblokiravanje korisnika |
+
+---
+
+## Paginacija i filtriranje
+
+Sve `index()` rute podržavaju paginaciju i filtriranje kroz query parametre:
+
+```
+GET /api/transactions?per_page=5&page=2
+GET /api/transactions?category=Food&date_from=2026-01-01
+GET /api/accounts?currency=EUR&status=active
+GET /api/users?role=client&is_active=true
+```
+
+Response format:
+```json
+{
+    "success": true,
+    "data": [...],
+    "meta": {
+        "current_page": 1,
+        "per_page": 10,
+        "total": 47,
+        "last_page": 5
+    }
+}
+```
+
+---
+
+## Pretraga
+
+```
+GET /api/transactions/search?category=Food&search=restoran&account_id=xxx
+GET /api/accounts/search?currency=EUR&min_balance=100&max_balance=5000
+GET /api/users/search?name=Ana&role=client
+```
+
+---
+
+## Transfer sredstava
+
+```
+POST /api/transfer
+Authorization: Bearer {token}
+Body:
+{
+    "sender_account_id": "uuid",
+    "receiver_account_id": "uuid",
+    "amount": 100,
+    "category": "Transfer",
+    "description": "Opis transfera"
+}
+```
+
+Podržani kursevi:
+
+| Par | Kurs |
+|---|---|
+| EUR → RSD | 117.20 |
+| RSD → EUR | 0.0085 |
+| USD → RSD | 108.50 |
+| RSD → USD | 0.0092 |
+| EUR → USD | 1.08 |
+| USD → EUR | 0.93 |
+
+---
+
+## Reset lozinke
+
+```
+# Korak 1 — zatraži token
+POST /api/forgot-password
+Body: { "email": "korisnik@email.com" }
+
+# Korak 2 — resetuj lozinku
+POST /api/reset-password
+Body:
+{
+    "email": "korisnik@email.com",
+    "token": "token_iz_emaila",
+    "password": "novaLozinka123",
+    "password_confirmation": "novaLozinka123"
+}
+```
+
+Token važi 30 minuta i može se iskoristiti samo jednom.
+
+---
+
+## Autori
+
+- Đorđe Jovanović — 2023/0412
+- Uroš Jevtić — 2023/0586
+- Ivana Jovanović — 2023/0415

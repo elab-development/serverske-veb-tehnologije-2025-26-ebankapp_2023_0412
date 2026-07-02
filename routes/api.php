@@ -16,23 +16,22 @@ Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password',  [AuthController::class, 'resetPassword']);
 
 //KLIJENT
-Route::middleware('auth:sanctum', 'isActive')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/me',      [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::get('accounts',          [AccountController::class, 'index']);
     Route::post('accounts',         [AccountController::class, 'store']);
+    Route::get('accounts/search',  [AccountController::class, 'search']);
     Route::get('accounts/{id}',     [AccountController::class, 'show']);
     Route::get('accounts/{id}/balance',       [AccountController::class, 'getBalance']);
     Route::get('accounts/{id}/transactions',  [TransactionController::class, 'byAccount']);
 
     Route::get('transactions',        [TransactionController::class, 'index']);
     Route::post('transactions',       [TransactionController::class, 'store']);
-    Route::get('transactions/{id}',   [TransactionController::class, 'show']);
     Route::get('transactions/search', [TransactionController::class, 'search']);
-    Route::get('accounts/search',  [AccountController::class, 'search']);
-    //Route::get('users/search',     [UserController::class, 'search']);
+    Route::get('transactions/{id}',   [TransactionController::class, 'show']);
     Route::post('transfer',           [TransactionController::class, 'transfer']);
 
     Route::post('users/{id}/change-password', [UserController::class, 'changePassword']);
@@ -56,8 +55,8 @@ Route::middleware(['auth:sanctum','isActive', 'isManager'])->group(function () {
 Route::middleware(['auth:sanctum', 'isActive', 'isAdmin'])->group(function () {
 
     Route::apiResource('users', UserController::class);
-    Route::get('users/search',     [UserController::class, 'search']);
     Route::patch('users/{id}/role',    [UserController::class, 'changeRole']);
     Route::patch('users/{id}/block',   [UserController::class, 'block']);
     Route::patch('users/{id}/unblock', [UserController::class, 'unblock']);
+    Route::get('users/search',     [UserController::class, 'search']);
 });

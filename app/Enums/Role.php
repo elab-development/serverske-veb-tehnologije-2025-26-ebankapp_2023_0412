@@ -22,10 +22,10 @@ enum Role: string
         return match($this) {
             Role::Admin => [
                 'users.view', 'users.create', 'users.edit', 'users.delete',
-                'accounts.view', 'accounts.create', 'accounts.freeze',
+                'accounts.view', 'account.search', 'accounts.create', 'accounts.freeze',
                 'transactions.view', 'transactions.reverse',
             ],
-            Role::Manager => [ //treba controller za permission
+            Role::Manager => [
                 'users.view.own',
                 'users.create.account',
                 'accounts.view.own',

@@ -124,7 +124,6 @@ class AuthController extends Controller
             'email' => 'required|email|exists:users,email',
         ]);
 
-        
         PasswordReset::where('email', $request->email)->delete();
 
         $token = \Illuminate\Support\Str::random(64);

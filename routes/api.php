@@ -64,4 +64,4 @@ Route::middleware(['auth:sanctum', 'isActive', 'isAdmin'])->group(function () {
 });
 
 Route::get('/currencies/rates/{base?}',    [CurrencyController::class, 'rates']);
-Route::get('/currencies/{code}/countries', [CurrencyController::class, 'countries']);
+Route::get('/currencies/supported', [CurrencyController::class, 'supportedCurrencies']);

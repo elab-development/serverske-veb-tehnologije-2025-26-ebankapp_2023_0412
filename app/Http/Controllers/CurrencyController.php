@@ -51,55 +51,35 @@ class CurrencyController extends Controller
             ], 503);
         }
     }
-    public function countries(string $code)
+    
+    public function supportedCurrencies()
     {
         try {
-            $code = strtoupper($code);
-
-            $data = Cache::remember("currency_countries_{$code}", 86400, function () use ($code) {
-                $response = Http::timeout(5)->get(
-                    "https://restcountries.com/v3.1/currency/{$code}",
-                    ['fields' => 'name,cca2,capital,region']
-                );
-
-                if ($response->status() === 404) {
-                    return null;
-                }
+            $data = Cache::remember('supported_currencies', 86400, function () {
+                $response = Http::timeout(5)->get('https://api.frankfurter.dev/v1/currencies');
 
                 if (!$response->successful()) {
-                    throw new Exception('Javni servis restcountries nije dostupan.');
+                    throw new Exception('Javni servis nije dostupan.');
                 }
 
-                return collect($response->json())->map(fn ($c) => [
-                    'country' => $c['name']['common'] ?? null,
-                    'code'    => $c['cca2'] ?? null,
-                    'capital' => $c['capital'][0] ?? null,
-                    'region'  => $c['region'] ?? null,
-                ])->values()->toArray();
+                return $response->json();
             });
 
-            if ($data === null) {
-                return response()->json([
-                    'success' => false,
-                    'message' => "Valuta {$code} nije pronađena.",
-                ], 404);
-            }
-
             return response()->json([
-                'success'  => true,
-                'currency' => $code,
-                'count'    => count($data),
-                'data'     => $data,
+                'success' => true,
+                'count'   => count($data),
+                'data'    => $data,
             ], 200);
 
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Greška pri učitavanju podataka o valuti.',
+                'message' => 'Greška pri učitavanju liste valuta.',
                 'error'   => $e->getMessage(),
             ], 503);
         }
     }
+
      public static function exchangeRate(string $from, string $to): ?float
     {
         if ($from === $to) {

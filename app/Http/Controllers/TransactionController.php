@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use OpenApi\Attributes as OA;
 use App\Models\Account;
 use App\Models\Transaction;
 use Illuminate\Http\Request;

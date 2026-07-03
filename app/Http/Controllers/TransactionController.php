@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use OpenApi\Attributes as OA;
 use App\Models\Account;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
@@ -46,8 +47,8 @@ class TransactionController extends Controller
         $transaction = Transaction::findOrFail($id);
         $transaction->delete();
         return response()->json(['message'=>'Transakcija je obrisana.']);
-    }
-
+    } 
+    
     public function transfer(Request $request)
     {
         $request->validate([

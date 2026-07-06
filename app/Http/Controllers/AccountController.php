@@ -295,7 +295,7 @@ class AccountController extends Controller
         if ($accounts->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'No accounts found.',
+                'message' => 'Racun nije pronadjen.',
             ], 404);
         }
 
@@ -313,7 +313,7 @@ class AccountController extends Controller
     } catch (Exception $e) {
         return response()->json([
             'success' => false,
-            'message' => 'Search failed.',
+            'message' => 'Pretraga neuspesna.',
             'error'   => $e->getMessage(),
         ], 500);
     }

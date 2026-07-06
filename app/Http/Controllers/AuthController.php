@@ -151,7 +151,7 @@ class AuthController extends Controller
     } catch (Exception $e) {
         return response()->json([
             'success' => false,
-            'message' => 'Failed to generate reset token.',
+            'message' => 'Neuspeno generisanje reset tokena.',
             'error'   => $e->getMessage(),
         ], 500);
     }
@@ -174,7 +174,7 @@ class AuthController extends Controller
         if (!$resetToken) {
             return response()->json([
                 'success' => false,
-                'message' => 'Invalid token.',
+                'message' => 'Netacan token.',
             ], 400);
         }
 
@@ -183,7 +183,7 @@ class AuthController extends Controller
             $resetToken->delete();
             return response()->json([
                 'success' => false,
-                'message' => 'Token has expired. Please request a new one.',
+                'message' => 'Token je istekao. Molim Vas, zatrazite novi.',
             ], 400);
         }
 
@@ -198,13 +198,13 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Password reset successfully. Please login again.',
+            'message' => 'Lozinka je uspesno resetovana. Molim Vas, ulogujte se ponovo.',
         ], 200);
 
     } catch (Exception $e) {
         return response()->json([
             'success' => false,
-            'message' => 'Password reset failed.',
+            'message' => 'Neuspesan reset lozinke.',
             'error'   => $e->getMessage(),
         ], 500);
     }

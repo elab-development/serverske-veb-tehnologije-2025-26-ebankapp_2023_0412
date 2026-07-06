@@ -1,0 +1,362 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\User;
+use App\Enums\Role;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Hash;
+use Exception;
+
+class UserController extends Controller
+{
+
+    public function store(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'name'     => ['required', 'string', 'max:100'],
+                'email'    => ['required', 'email', 'unique:users,email'],
+                'password' => ['required', 'string', 'min:8'],
+                'role'     => ['nullable', Rule::enum(Role::class)],
+                'phone'    => ['nullable', 'string', 'max:30', 'unique:users,phone'],
+                'jmbg'     => ['nullable', 'string', 'size:13', 'unique:users,jmbg'],
+                'address'  => ['nullable', 'string', 'max:255'],
+            ]);
+
+            $validated['is_active'] = true;
+
+            $user = User::create($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Korisnik je uspešno kreiran.',
+                'data'    => $user,
+            ], 201);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Kreiranje korisnika nije uspelo.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+    public function show(string $id)
+    {
+        try {
+            $user = User::with('accounts')->findOrFail($id);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Detalji korisnika su uspešno učitani.',
+                'data'    => $user,
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Korisnik nije pronađen.',
+                'error'   => $e->getMessage(),
+            ], 404);
+        }
+    }
+
+
+    public function update(Request $request, string $id)
+    {
+        try {
+            $user = User::findOrFail($id);
+
+            $validated = $request->validate([
+                'name'    => ['sometimes', 'string', 'max:100'],
+                'email'   => ['sometimes', 'email', Rule::unique('users', 'email')->ignore($user->id)],
+                'password'=> ['sometimes', 'string', 'min:8'],
+                'role'    => ['sometimes', Rule::enum(Role::class)],
+                'phone'   => ['nullable', 'string', 'max:30', Rule::unique('users', 'phone')->ignore($user->id)],
+                'jmbg'    => ['nullable', 'string', 'size:13', Rule::unique('users', 'jmbg')->ignore($user->id)],
+                'address' => ['nullable', 'string', 'max:255'],
+            ]);
+
+            $user->update($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Korisnik je uspešno ažuriran.',
+                'data'    => $user->fresh(),
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ažuriranje korisnika nije uspelo.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+ 
+    public function destroy(string $id)
+    {
+        try {
+            $user = User::with('accounts')->findOrFail($id);
+
+            if ($user->accounts->isNotEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Korisnik ne može biti obrisan dok ima aktivne račune.',
+                ], 422);
+            }
+
+            $user->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Korisnik je uspešno obrisan.',
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Brisanje korisnika nije uspelo.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+    public function block(string $id)
+    {
+        try {
+            $user = User::findOrFail($id);
+
+            if ($user->isBlocked()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Korisnik je već blokiran.',
+                ], 422);
+            }
+
+            $user->update(['is_active' => false]);
+            $user->tokens()->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Korisnik je uspešno blokiran.',
+                'data'    => $user->fresh(),
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Blokiranje korisnika nije uspelo.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+  
+    public function unblock(string $id)
+    {
+        try {
+            $user = User::findOrFail($id);
+
+            if ($user->isActive()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Korisnik je već aktivan.',
+                ], 422);
+            }
+
+            $user->update(['is_active' => true]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Korisnik je uspešno odblokiran.',
+                'data'    => $user->fresh(),
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Odblokiralnje korisnika nije uspelo.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+  
+    public function changeRole(Request $request, string $id)
+    {
+        try {
+            $user = User::findOrFail($id);
+
+            $validated = $request->validate([
+                'role' => ['required', Rule::enum(Role::class)],
+            ]);
+
+            $user->update(['role' => $validated['role']]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Uloga korisnika je uspešno promenjena.',
+                'data'    => $user->fresh(),
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Promena uloge nije uspela.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    
+    public function changePassword(Request $request, string $id)
+    {
+        try {
+
+            if ((string) $request->user()->id !== (string) $id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Nemate dozvolu da menjate lozinku drugog korisnika.',
+                ], 403);
+            }
+            $user = User::findOrFail($id);
+
+            $request->validate([
+                'current_password' => ['required', 'string'],
+                'new_password'     => ['required', 'string', 'min:8', 'confirmed'],
+            ]);
+
+            if (!Hash::check($request->current_password, $user->password)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Trenutna lozinka nije tačna.',
+                ], 422);
+            }
+
+            $user->update(['password' => $request->new_password]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Lozinka je uspešno promenjena.',
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Promena lozinke nije uspela.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+    public function index(Request $request)
+{
+    try {
+        $query = User::with('accounts');
+
+        if ($request->filled('role')) {
+            $query->where('role', $request->role);
+        }
+
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('email', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        if ($request->filled('is_active')) {
+            $query->where('is_active', filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN));
+        }
+
+        $perPage = $request->get('per_page', 10);
+        $users = $query->paginate($perPage);
+
+        return response()->json([
+            'success' => true,
+            'data'    => $users->items(),
+            'meta'    => [
+                'current_page' => $users->currentPage(),
+                'per_page'     => $users->perPage(),
+                'total'        => $users->total(),
+                'last_page'    => $users->lastPage(),
+            ]
+        ], 200);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Greska pri ucitavanju korisnika.',
+            'error'   => $e->getMessage(),
+        ], 500);
+    }
+}
+public function search(Request $request)
+{
+    try {
+        $query = User::with('accounts');
+
+        if ($request->filled('name')) {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+
+        if ($request->filled('email')) {
+            $query->where('email', 'like', '%' . $request->email . '%');
+        }
+
+        if ($request->filled('role')) {
+            $query->where('role', $request->role);
+        }
+
+        if ($request->filled('is_active')) {
+            $query->where('is_active', filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN));
+        }
+
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortDir = strtolower($request->get('sort_dir', 'desc'));
+
+        $allowedSortColumns = ['created_at', 'name', 'email', 'role'];
+        $sortDir = in_array($sortDir, ['asc', 'desc']) ? $sortDir : 'desc';
+
+        if (in_array($sortBy, $allowedSortColumns)) {
+            $query->orderBy($sortBy, $sortDir);
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        $perPage = $request->get('per_page', 10);
+        $users = $query->paginate($perPage);
+
+        if ($users->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No users found.',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data'    => $users->items(),
+            'meta'    => [
+                'current_page' => $users->currentPage(),
+                'per_page'     => $users->perPage(),
+                'total'        => $users->total(),
+                'last_page'    => $users->lastPage(),
+            ]
+        ], 200);
+
+    } catch (Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Search failed.',
+            'error'   => $e->getMessage(),
+        ], 500);
+    }
+}
+}

@@ -125,4 +125,4 @@ Authorization: Bearer {token}
 
 ## Napomena
 
-Ovaj projekat je izrađen kao seminarski rad u okviru predmeta Serverske veb tehnologije, Elektrotehnički fakultet. Kod je javno dostupan isključivo u obrazovne svrhe.
+Ovaj projekat je izrađen kao seminarski rad u okviru predmeta Serverske veb tehnologije, Fakultet organizacionih nauka. Kod je javno dostupan isključivo u obrazovne svrhe.
